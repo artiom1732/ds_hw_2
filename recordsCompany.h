@@ -2,8 +2,9 @@
 #define RECORDS_COMPANY_H
 
 #include "utilesWet2.h"
-#include "test.h"
-
+#include "AvlTree.h"
+#include "HashTable.h"
+#include "UnionFind.h"
 
 
 class RecordsCompany {

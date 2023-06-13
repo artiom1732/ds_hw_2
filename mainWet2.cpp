@@ -15,7 +15,7 @@ void print(string cmd, Output_t<T> res);
 
 vector<int> getRecordsStocks();
 
-int main()
+int main2()
 {
   string op;
   RecordsCompany *test_obj = new RecordsCompany();

@@ -156,14 +156,20 @@ public:
         }
     }
     ~HashTable(){delete[] costumers;}
-    void largerTable(Costumer** to_resize)  
+    void largerTable(Costumer** to_resize) //still O(n)?  
     {
         max_size = max_size * 2;
         Costumer** temp = costumers;
         costumers = new Costumer*[max_size];
         for(int i=0;i<size;i++)
         {
-            costumers[i] = temp[i];
+            Costumer* cur = temp[i];
+            while(cur->next != nullptr)
+            {
+                int index = HashFunc(temp[i]->id,max_size);
+                costumers[index] = cur;
+                cur = cur->next;
+            }
             temp[i] = nullptr;
         }
         delete[] temp;

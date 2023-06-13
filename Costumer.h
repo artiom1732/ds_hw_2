@@ -8,8 +8,7 @@ public:
     int id;
     int phone_number;
     Costumer* next;
-    bool vip;
-    Costumer(int id,int number):id(id),phone_number(number),next(nullptr),vip(false){}
+    Costumer(int id,int number):id(id),phone_number(number),next(nullptr){}
 };
 
 #endif

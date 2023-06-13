@@ -1,6 +1,6 @@
 #include "UnionFind.h"
 
-UnionFind::UnionFind(int* input,int input_size):group_counter(0),elements(new Disk_Node*[input_size]),groups(new Group*[input_size]),number_of_records(input_size)
+UnionFind::UnionFind(int* input,int input_size):group_counter(0),elements(new Disk_Node*[input_size]),groups(new Group*[input_size]),number_of_records(input_size),sells(0)
 {
     for(int i=0;i<input_size;i++)
     {
@@ -37,6 +37,10 @@ Group* UnionFind::Find(int a)
 
 Group* UnionFind::Union(int b,int a)
 {
+    if(Connected(a,b))
+    {
+        return nullptr;
+    }
     Group* A = Find(a);   //g_1 = A
     Group* B = Find(b);   //g_2 = B
     if(A->size < B->size)

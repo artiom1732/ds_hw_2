@@ -11,7 +11,6 @@ public:
     Disk_Node** elements;
     Group** groups;
     int number_of_records;
-    int sells;
     UnionFind(int* input,int input_size);
     ~UnionFind(){delete[] elements;delete[] groups;}
     Group* Find(int a);

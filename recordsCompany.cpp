@@ -30,6 +30,7 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records)
         disks = new UnionFind(records_stocks,number_of_records);
         costumers = new HashTable();
         vip_costumers = new AVLTree<VipCostumer>();
+        return SUCCESS;
     }
     delete[] disks; //remove all old disks
     disks = new UnionFind(records_stocks,number_of_records);
@@ -44,11 +45,12 @@ StatusType RecordsCompany::addCostumer(int c_id, int phone)
         return INVALID_INPUT;
     }
     
-    if(costumers->addCostumer(c_id,phone))
+    if(costumers->Find(c_id))
     {
-        return SUCCESS;
+        return ALREADY_EXISTS;
     }
-    return ALREADY_EXISTS;
+    costumers->addCostumer(c_id,phone);
+    return SUCCESS;
 }
 
 Output_t<int> RecordsCompany::getPhone(int c_id)
@@ -65,7 +67,7 @@ Output_t<int> RecordsCompany::getPhone(int c_id)
     return DOESNT_EXISTS;
 }
 
-StatusType RecordsCompany::makeMember(int c_id)
+StatusType RecordsCompany::makeMember(int c_id)     //O(n) because hashtable
 {
     if(c_id < 0)
     {
@@ -75,9 +77,13 @@ StatusType RecordsCompany::makeMember(int c_id)
     {
         return DOESNT_EXISTS;
     }
-    if(vip_costumers->Find(c_id) != nullptr)
+    TreeNode<VipCostumer>* temp = vip_costumers->Find(c_id);
+    if(temp != nullptr)
     {
-        return ALREADY_EXISTS;
+        if(temp->data->id == c_id)
+        {
+            return ALREADY_EXISTS;
+        }
     }
     vip_costumers->treeInsert(c_id,new VipCostumer(c_id));
     return SUCCESS;
@@ -96,21 +102,21 @@ Output_t<bool> RecordsCompany::isMember(int c_id)
     return SUCCESS;
 }
 
-StatusType RecordsCompany::buyRecord(int c_id, int r_id)
+StatusType RecordsCompany::buyRecord(int c_id, int r_id)    //O(n) because hashtable
 {
     if(c_id < 0 || r_id < 0)
     {
         return INVALID_INPUT;
     }
-    if(r_id > disks->number_of_records || !costumers->Find(c_id))
+    if(r_id >= disks->number_of_records || !costumers->Find(c_id))
     {
         return DOESNT_EXISTS;
     }
-    disks[r_id].sells++;
-    VipCostumer* temp = vip_costumers->Find(c_id)->data;
+    disks->elements[r_id]->sells++;
+    TreeNode<VipCostumer>* temp = vip_costumers->Find(c_id);
     if(temp)
     {
-        temp->expenses += 100 + disks[r_id].sells;
+        temp->data->expenses = temp->data->expenses + 100 + disks->elements[r_id]->sells;
         return SUCCESS;
     }
     return SUCCESS;
@@ -130,7 +136,7 @@ static void AddPrizeInOrder(TreeNode<VipCostumer>* root,int amount)
 
 StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double  amount)
 {
-    if(c_id1 < 0 || c_id2 < 0 || amount < 0)
+    if(c_id1 < 0 || (c_id2 < c_id1) || amount <= 0)
     {
         return INVALID_INPUT;
     }
@@ -145,12 +151,12 @@ Output_t<double> RecordsCompany::getExpenses(int c_id)
     {
         return INVALID_INPUT;
     }
-    VipCostumer* temp = vip_costumers->Find(c_id)->data;
-    if(temp== nullptr)
+    TreeNode<VipCostumer>* temp = vip_costumers->Find(c_id);
+    if(temp == nullptr)
     {
         return DOESNT_EXISTS;
     }
-    return temp->expenses;
+    return temp->data->expenses;
 }
 
 StatusType RecordsCompany::putOnTop(int r_id1, int r_id2)

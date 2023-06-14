@@ -38,35 +38,31 @@ void HashTable::largerTable(Costumer** to_resize) //still O(n)?
     delete[] temp;
 }
 
-bool HashTable::addCostumer(int id,int number)
+void HashTable::addCostumer(int id,int number)
 {
     int index = HashFunc(id,max_size);
     if(costumers[index] == nullptr)
     {
-        if(costumers[index]->id == id)
-        {
-            return false;
-        }
         costumers[index] = new Costumer(id,number);
         size++;
         if(size > max_size/2)
         {
             largerTable(costumers);
         }
-        return true;
+        return;
     }
     Costumer* temp = costumers[index];
     while(temp->next != nullptr)
     {
         if(temp->id == id)
         {
-            return false;
+            return;
         }
         temp = temp->next;
     }
     if(temp->id == id)
     {
-        return false;
+        return;
     }
     temp->next = new Costumer(id,number);
     size++;
@@ -74,7 +70,6 @@ bool HashTable::addCostumer(int id,int number)
     {
         largerTable(costumers);
     }
-    return true;
 }
 
 Costumer* HashTable::Find(int id)

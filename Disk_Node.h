@@ -11,7 +11,8 @@ public:
     Disk_Node* up;   //the node above in the tree
     Group* group;
     int r;
-    Disk_Node(int id,int amount):id(id),cd_amount(amount),up(nullptr),group(nullptr),r(0){}
+    int sells;
+    Disk_Node(int id,int amount):id(id),cd_amount(amount),up(nullptr),group(nullptr),r(0),sells(0){}
     void AddGroup(Group* to_add){group = to_add;}
 };
 

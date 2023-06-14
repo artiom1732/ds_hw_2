@@ -12,7 +12,7 @@ public:
     HashTable(int sz=4);
     ~HashTable(){delete[] costumers;}
     void largerTable(Costumer** to_resize); //still O(n)?  
-    bool addCostumer(int id,int number);
+    void addCostumer(int id,int number);
     int getPhone(int id);
     Costumer* Find(int id);
 };

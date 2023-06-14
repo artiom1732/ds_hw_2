@@ -1,6 +1,6 @@
 #include "UnionFind.h"
 
-UnionFind::UnionFind(int* input,int input_size):group_counter(0),elements(new Disk_Node*[input_size]),groups(new Group*[input_size]),number_of_records(input_size),sells(0)
+UnionFind::UnionFind(int* input,int input_size):group_counter(0),elements(new Disk_Node*[input_size]),groups(new Group*[input_size]),number_of_records(input_size)
 {
     for(int i=0;i<input_size;i++)
     {

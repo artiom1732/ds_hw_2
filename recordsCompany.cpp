@@ -95,11 +95,15 @@ Output_t<bool> RecordsCompany::isMember(int c_id)
     {
         return INVALID_INPUT;
     }
-    if(vip_costumers->Find(c_id) == nullptr)
+    if(costumers->Find(c_id) == nullptr)
     {
         return DOESNT_EXISTS;
     }
-    return SUCCESS;
+    else if(vip_costumers->Find(c_id) == nullptr)
+    {
+        return false;
+    }
+    return true;
 }
 
 StatusType RecordsCompany::buyRecord(int c_id, int r_id)    //O(n) because hashtable
@@ -108,7 +112,7 @@ StatusType RecordsCompany::buyRecord(int c_id, int r_id)    //O(n) because hasht
     {
         return INVALID_INPUT;
     }
-    if(r_id >= disks->number_of_records || !costumers->Find(c_id))
+    if(r_id >= disks->number_of_records || costumers->Find(c_id) == nullptr)
     {
         return DOESNT_EXISTS;
     }
@@ -122,16 +126,22 @@ StatusType RecordsCompany::buyRecord(int c_id, int r_id)    //O(n) because hasht
     return SUCCESS;
 }
 
-static void AddPrizeInOrder(TreeNode<VipCostumer>* root,int amount)
+static void AddPrizeInOrder(TreeNode<VipCostumer>* root,int amount,int c_id1,int c_id2)
 {
     if(root == nullptr)
     {
         return;
     }
-    AddPrizeInOrder(root->left,amount);
-    root->data->prize += amount;
-    AddPrizeInOrder(root->right,amount);
-    root->data->prize += amount;
+    AddPrizeInOrder(root->left,amount,c_id1,c_id2);
+    if(root->data->id <= c_id2 && root->data->id >= c_id1)
+    {
+        root->data->prize += amount;    
+    }
+    AddPrizeInOrder(root->right,amount,c_id1,c_id2);
+    if(root->data->id <= c_id2 && root->data->id >= c_id1)
+    {
+        root->data->prize += amount;    
+    }
 }
 
 StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double  amount)
@@ -141,7 +151,7 @@ StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double  amount)
         return INVALID_INPUT;
     }
     TreeNode<VipCostumer>* root = vip_costumers->head;
-    AddPrizeInOrder(root,amount);
+    AddPrizeInOrder(root,amount,c_id1,c_id2);
     return SUCCESS;
 }
 
@@ -156,7 +166,7 @@ Output_t<double> RecordsCompany::getExpenses(int c_id)
     {
         return DOESNT_EXISTS;
     }
-    return temp->data->expenses;
+    return temp->data->expenses - temp->data->prize;
 }
 
 StatusType RecordsCompany::putOnTop(int r_id1, int r_id2)

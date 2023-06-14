@@ -64,21 +64,21 @@ int main()
       int c_id, r_id;
       cin >> c_id; cin >> r_id;
 
-      //print(op, test_obj->buyRecord(c_id, r_id));
+      print(op, test_obj->buyRecord(c_id, r_id));
     }
     else if(!op.compare("addPrize"))
     {
       int c_id1, c_id2, amount;
       cin >> c_id1; cin >> c_id2; cin >> amount;
 
-      //print(op, test_obj->addPrize(c_id1, c_id2, amount));
+      print(op, test_obj->addPrize(c_id1, c_id2, amount));
     }
     else if(!op.compare("getExpenses"))
     {
       int c_id;
       cin >> c_id;
 
-      //print(op, test_obj->getExpenses(c_id));
+      print(op, test_obj->getExpenses(c_id));
     }
     else if(!op.compare("putOnTop"))
     {

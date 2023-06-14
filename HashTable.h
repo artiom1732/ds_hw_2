@@ -9,7 +9,7 @@ public:
     int size;
     int max_size;
     Costumer** costumers;
-    HashTable(int sz=4);
+    HashTable(int sz=10);
     ~HashTable(){delete[] costumers;}
     void largerTable(Costumer** to_resize); //still O(n)?  
     void addCostumer(int id,int number);

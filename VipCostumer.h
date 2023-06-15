@@ -6,7 +6,7 @@ class VipCostumer
 public:
     int id;
     double expenses;
-    int prize;
+    double prize;
     VipCostumer(int id):id(id),expenses(0),prize(0){}
 };
 

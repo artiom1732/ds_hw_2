@@ -13,6 +13,22 @@ HashTable::HashTable(int sz):size(0),max_size(sz),costumers(new Costumer*[sz])
     }
 }
 
+
+HashTable::~HashTable()
+{
+    for(int i=0;i<max_size;i++)
+    {
+        Costumer* temp = costumers[i];
+        while(temp)
+        {
+            Costumer* next = temp->next;
+            delete temp;
+            temp = next;
+        }
+    }
+    delete[] costumers;
+}
+
 void HashTable::largerTable(Costumer** to_resize) //still O(n)?  
 {
     max_size = max_size * 2;
@@ -30,10 +46,9 @@ void HashTable::largerTable(Costumer** to_resize) //still O(n)?
         {
             addCostumer(cur->id,cur->phone_number);
             Costumer* next = cur->next;
-            delete temp[i];
+            delete cur;
             cur = next;
         }
-        temp[i] = nullptr;
     }
     delete[] temp;
 }
@@ -94,5 +109,5 @@ int HashTable::getPhone(int id)
     {
         return temp->phone_number;
     }
-    return 0;
+    return -1;
 }

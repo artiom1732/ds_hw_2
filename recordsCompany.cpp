@@ -12,11 +12,17 @@ static void clearVipCostumers(TreeNode<VipCostumer>* root)
         return;
     }
     clearVipCostumers(root->left);
-    root->data->prize -= root->data->expenses;
-    root->data->expenses = 0;
+    if(root->data->prize < root->data->expenses)
+    {
+        root->data->prize = 0;
+        root->data->expenses = 0;
+    }
+    else 
+    {
+        root->data->prize -= root->data->expenses;
+        root->data->expenses = 0;
+    }
     clearVipCostumers(root->right);
-    root->data->prize -= root->data->expenses;
-    root->data->expenses = 0;
 }
 
 StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records)
@@ -32,7 +38,7 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records)
         vip_costumers = new AVLTree<VipCostumer>();
         return SUCCESS;
     }
-    delete[] disks; //remove all old disks
+    delete disks;
     disks = new UnionFind(records_stocks,number_of_records);
     clearVipCostumers(vip_costumers->head);
     return SUCCESS;
@@ -44,8 +50,7 @@ StatusType RecordsCompany::addCostumer(int c_id, int phone)
     {
         return INVALID_INPUT;
     }
-    
-    if(costumers->Find(c_id))
+    if(costumers->Find(c_id) != nullptr)
     {
         return ALREADY_EXISTS;
     }
@@ -60,11 +65,11 @@ Output_t<int> RecordsCompany::getPhone(int c_id)
         return INVALID_INPUT;
     }
     int result = costumers->getPhone(c_id);
-    if(result)
+    if(result < 0)
     {
-        return result;
+        return DOESNT_EXISTS;
     }
-    return DOESNT_EXISTS;
+    return result;
 }
 
 StatusType RecordsCompany::makeMember(int c_id)     //O(n) because hashtable
@@ -80,10 +85,7 @@ StatusType RecordsCompany::makeMember(int c_id)     //O(n) because hashtable
     TreeNode<VipCostumer>* temp = vip_costumers->Find(c_id);
     if(temp != nullptr)
     {
-        if(temp->data->id == c_id)
-        {
-            return ALREADY_EXISTS;
-        }
+        return ALREADY_EXISTS;
     }
     vip_costumers->treeInsert(c_id,new VipCostumer(c_id));
     return SUCCESS;
@@ -99,11 +101,11 @@ Output_t<bool> RecordsCompany::isMember(int c_id)
     {
         return DOESNT_EXISTS;
     }
-    else if(vip_costumers->Find(c_id) == nullptr)
+    else if(vip_costumers->Find(c_id) != nullptr)
     {
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
 
 StatusType RecordsCompany::buyRecord(int c_id, int r_id)    //O(n) because hashtable
@@ -116,13 +118,13 @@ StatusType RecordsCompany::buyRecord(int c_id, int r_id)    //O(n) because hasht
     {
         return DOESNT_EXISTS;
     }
-    disks->elements[r_id]->sells++;
     TreeNode<VipCostumer>* temp = vip_costumers->Find(c_id);
     if(temp)
     {
-        temp->data->expenses = temp->data->expenses + 100 + disks->elements[r_id]->sells;
+        temp->data->expenses = temp->data->expenses + 100 + disks->elements[r_id]->sells++;
         return SUCCESS;
     }
+    disks->elements[r_id]->sells++;
     return SUCCESS;
 }
 
@@ -135,13 +137,9 @@ static void AddPrizeInOrder(TreeNode<VipCostumer>* root,int amount,int c_id1,int
     AddPrizeInOrder(root->left,amount,c_id1,c_id2);
     if(root->data->id <= c_id2 && root->data->id >= c_id1)
     {
-        root->data->prize += amount;    
+        root->data->prize += amount; 
     }
     AddPrizeInOrder(root->right,amount,c_id1,c_id2);
-    if(root->data->id <= c_id2 && root->data->id >= c_id1)
-    {
-        root->data->prize += amount;    
-    }
 }
 
 StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double  amount)
@@ -175,7 +173,7 @@ StatusType RecordsCompany::putOnTop(int r_id1, int r_id2)
     {
         return INVALID_INPUT;
     }
-    if(r_id1 > disks->number_of_records || r_id2 > disks->number_of_records)
+    if(r_id1 >= disks->number_of_records || r_id2 >= disks->number_of_records)
     {
         return DOESNT_EXISTS;
     }
@@ -192,7 +190,7 @@ StatusType RecordsCompany::getPlace(int r_id, int *column, int *hight)
     {
         return INVALID_INPUT;
     }
-    if(r_id> disks->number_of_records)
+    if(r_id >= disks->number_of_records)
     {
         return DOESNT_EXISTS;
     }

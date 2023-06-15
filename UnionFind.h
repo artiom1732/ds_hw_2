@@ -12,7 +12,7 @@ public:
     Group** groups;
     int number_of_records;
     UnionFind(int* input,int input_size);
-    ~UnionFind(){delete[] elements;delete[] groups;}
+    ~UnionFind();
     Group* Find(int a);
     Group* Union(int b,int a);   // putting b on a
     bool Connected(int a,int b);

@@ -11,6 +11,17 @@ UnionFind::UnionFind(int* input,int input_size):group_counter(0),elements(new Di
     }
 }
 
+UnionFind::~UnionFind()
+{
+    for(int i=0;i<number_of_records;i++)
+    {
+        delete elements[i];
+        delete groups[i];
+    }
+    delete[] groups;
+    delete[] elements;
+}
+
 Group* UnionFind::Find(int a)
 {
     int sumR = 0;
@@ -25,33 +36,34 @@ Group* UnionFind::Find(int a)
     int to_subtract = 0;
     while(temp!=root)
     {
-        temp->r = sumR;
-        to_subtract = to_subtract + temp->r;
-        sumR = sumR - temp->r;
+        int temp_r = temp->r;
+        temp->r = sumR - to_subtract;
         Disk_Node* next = temp->up;
         temp->up = root;
         temp = next;
+        to_subtract = to_subtract + temp_r;
     }
     return root->group;
 }
 
-Group* UnionFind::Union(int b,int a)
+Group* UnionFind::Union(int b,int a)    //b is put on a
 {
     if(Connected(a,b))
     {
         return nullptr;
     }
-    Group* A = Find(a);   //g_1 = A
-    Group* B = Find(b);   //g_2 = B
+    Group* A = Find(a);  
+    Group* B = Find(b);  
     if(A->size < B->size)
     {
         A->head->up = B->head;
         B->size += A->size;
         B->group_id = ++group_counter;
-        B->height += A->height;
         B->head->r += A->height;
         A->head->r = A->head->r - B->head->r;
         A->head->group = nullptr;
+        B->height += A->height;
+        B->base_of_column = A->base_of_column;
         return B;
     }
     B->head->up = A->head;
@@ -59,6 +71,8 @@ Group* UnionFind::Union(int b,int a)
     A->group_id = ++group_counter;
     B->head->r = B->head->r + A->height - A->head->r;
     B->head->group = nullptr;
+    A->height += B->height;
+    B->base_of_column = A->base_of_column;
     return A;
 }
 
@@ -70,7 +84,7 @@ bool UnionFind::Connected(int a,int b)
 void UnionFind::getPlace(int r_id,int* column,int* height)
 {
     Group* temp = Find(r_id);
-    *column = temp->column;
+    *column = temp->base_of_column->id;
     *height = 0;
     Disk_Node* root = elements[r_id];
     while(root!=nullptr)

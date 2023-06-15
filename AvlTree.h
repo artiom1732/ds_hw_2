@@ -2,6 +2,7 @@
 #define _AVL_TREE
 
 #include "VipCostumer.h"
+#include "Costumer.h"
 
 inline int max(int a,int b)
 {

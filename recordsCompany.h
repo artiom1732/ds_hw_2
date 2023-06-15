@@ -9,9 +9,9 @@
 
 class RecordsCompany {
   private:
-    UnionFind* disks;
-    HashTable* costumers;
-    AVLTree<VipCostumer>* vip_costumers;
+    UnionFind* Disks;
+    HashTable* Costumers;
+    AVLTree<VipCostumer>* Vip_Costumers;
   public:
     RecordsCompany();
     ~RecordsCompany();

@@ -5,11 +5,11 @@ int HashFunc(int n,int m)
     return n%m;
 }
 
-HashTable::HashTable(int sz):size(0),max_size(sz),costumers(new Costumer*[sz])
+HashTable::HashTable(int sz):size(0),max_size(sz),costumers(new AVLTree<Costumer>*[sz])
 {
     for(int i=0;i<sz;i++)
     {
-        costumers[i] = nullptr;
+        costumers[i] = new AVLTree<Costumer>();
     }
 }
 
@@ -18,68 +18,50 @@ HashTable::~HashTable()
 {
     for(int i=0;i<max_size;i++)
     {
-        Costumer* temp = costumers[i];
-        while(temp)
+        if(costumers[i] != nullptr)
         {
-            Costumer* next = temp->next;
-            delete temp;
-            temp = next;
+            delete costumers[i];
         }
     }
     delete[] costumers;
 }
 
-void HashTable::largerTable(Costumer** to_resize) //still O(n)?  
+void CopyTrees(TreeNode<Costumer>* root,AVLTree<Costumer>** data,int size)
+{
+    if(root == nullptr)
+    {
+        return;
+    }
+    CopyTrees(root->left,data,size);
+    data[HashFunc(root->data->id,size)]->treeInsert(root->key,new Costumer(root->data->id,root->data->phone_number));
+    CopyTrees(root->right,data,size);
+}
+
+void HashTable::largerTable(AVLTree<Costumer>** to_resize) //still O(n)?  
 {
     max_size = max_size * 2;
-    Costumer** temp = costumers;
-    costumers = new Costumer*[max_size];
-    size = 0;
+    AVLTree<Costumer>** temp = costumers;
+    costumers = new AVLTree<Costumer>*[max_size];
     for(int i=0;i<max_size;i++)
     {
-        costumers[i] = nullptr;
+        costumers[i] = new AVLTree<Costumer>();
     }
+    size = 0;
     for(int i=0;i<max_size/2;i++)
     {
-        Costumer* cur = temp[i];
-        while(cur != nullptr)
-        {
-            addCostumer(cur->id,cur->phone_number);
-            Costumer* next = cur->next;
-            delete cur;
-            cur = next;
-        }
+        TreeNode<Costumer>* cur_head = temp[i]->head;
+        CopyTrees(cur_head,costumers,max_size);
+        delete temp[i];
     }
     delete[] temp;
 }
 
+
+
 void HashTable::addCostumer(int id,int number)
 {
     int index = HashFunc(id,max_size);
-    if(costumers[index] == nullptr)
-    {
-        costumers[index] = new Costumer(id,number);
-        size++;
-        if(size > max_size/2)
-        {
-            largerTable(costumers);
-        }
-        return;
-    }
-    Costumer* temp = costumers[index];
-    while(temp->next != nullptr)
-    {
-        if(temp->id == id)
-        {
-            return;
-        }
-        temp = temp->next;
-    }
-    if(temp->id == id)
-    {
-        return;
-    }
-    temp->next = new Costumer(id,number);
+    costumers[index]->treeInsert(id,new Costumer(id,number));
     size++;
     if(size > max_size/2)
     {
@@ -90,16 +72,12 @@ void HashTable::addCostumer(int id,int number)
 Costumer* HashTable::Find(int id)
 {
     int index = HashFunc(id,max_size);
-    Costumer* temp = costumers[index];
-    while(temp != nullptr)
+    TreeNode<Costumer>* temp = costumers[index]->Find(id);
+    if(temp == nullptr)
     {
-        if(temp->id == id)
-        {
-            return temp;
-        }
-        temp = temp->next;
+        return nullptr;
     }
-    return nullptr;
+    return temp->data;
 }
 
 int HashTable::getPhone(int id)

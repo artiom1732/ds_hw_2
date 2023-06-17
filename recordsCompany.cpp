@@ -1,18 +1,18 @@
 #include "recordsCompany.h"
 
-RecordsCompany::RecordsCompany():Disks(nullptr),Costumers(new HashTable()),Vip_Costumers(new AVLTree<VipCostumer>()){}
+RecordsCompany::RecordsCompany():Disks(nullptr),Costumers(new HashTable()),Vip_Costumers(new AVLTree<Costumer>()){}
 
 RecordsCompany::~RecordsCompany(){delete Disks;delete Costumers;delete Vip_Costumers;}
 
 
-static void clearVipCostumers(TreeNode<VipCostumer>* root)
+static void clearVipCostumers(TreeNode<Costumer>* root)
 {
     if(root == nullptr)
     {
         return;
     }
     clearVipCostumers(root->left);
-    root->data->prize = 0;
+    root->data->extra = 0;
     root->data->expenses = 0;
     clearVipCostumers(root->right);
 }
@@ -72,12 +72,14 @@ StatusType RecordsCompany::makeMember(int c_id)
     {
         return DOESNT_EXISTS;
     }
-    TreeNode<VipCostumer>* temp = Vip_Costumers->Find(c_id);
+    TreeNode<Costumer>* temp = Vip_Costumers->Find(c_id);
     if(temp != nullptr)
     {
         return ALREADY_EXISTS;
     }
-    Vip_Costumers->treeInsert(c_id,new VipCostumer(c_id));
+    Costumer* cur = Costumers->Find(c_id);
+    Vip_Costumers->treeInsert(c_id,new Costumer(cur->id,cur->phone_number));
+    cur->vip = true;
     return SUCCESS;
 }
 
@@ -92,11 +94,7 @@ Output_t<bool> RecordsCompany::isMember(int c_id)
     {
         return DOESNT_EXISTS;
     }
-    if(Vip_Costumers->Find(c_id) == nullptr)
-    {
-        return false;
-    }
-    return true;
+    return temp->vip;
 }
 
 
@@ -110,7 +108,7 @@ StatusType RecordsCompany::buyRecord(int c_id, int r_id)
     {
         return DOESNT_EXISTS;
     }
-    TreeNode<VipCostumer>* temp = Vip_Costumers->Find(c_id);
+    TreeNode<Costumer>* temp = Vip_Costumers->Find(c_id);
     if(temp)
     {
         temp->data->expenses = temp->data->expenses + 100 + Disks->elements[r_id]->sells++;
@@ -120,18 +118,109 @@ StatusType RecordsCompany::buyRecord(int c_id, int r_id)
     return SUCCESS;
 }
 
-void AddPrizeInOrder(TreeNode<VipCostumer>* head,int c_id1,int c_id2,double amount)
+
+void Add(TreeNode<Costumer>* root,int index,int orig_index,int amount)
 {
-    if(head == nullptr)
+    bool went_right = false;
+    bool already_added = false;
+    while(root != nullptr)
     {
-        return;
+        if(root->key < index && !went_right)
+        {
+            already_added = true;
+            went_right = true;
+            root->data->extra += amount;
+            root = root->right;
+            continue;
+        }
+        if(root->key < index && went_right)
+        {
+            went_right = true;
+            root = root->right;
+            continue;
+        }
+        if(root->key > index && went_right)
+        {
+            went_right = false;
+            root->data->extra -= amount;
+            root = root->left;
+            continue;
+        }
+        if(root->key > index && !went_right)
+        {
+            went_right = false;
+            root = root->left;
+            continue;
+        }
+        if(orig_index <= index)
+        {
+            if(root->key == index && went_right)  
+            {
+                if(already_added)
+                {
+                    root->data->extra -= amount;
+                }
+                if(root->left != nullptr)
+                {
+                    root->left->data->extra += amount;
+                }
+                return;
+            }
+            else if(root->key == index && !went_right)
+            {
+                if(root->left != nullptr)
+                {
+                    root->left->data->extra += amount;
+                }
+                return;
+            }
+        }
+        else if(orig_index > index)
+        {
+            if(root->key == index && went_right)  
+            {
+                if(root->right != nullptr)
+                {
+                    root->right->data->extra -= amount;
+                }
+                return;
+            }
+            else if(root->key == index && !went_right)
+            {
+                root->data->extra += amount;
+                if(root->right != nullptr)
+                {
+                    root->right->data->extra += amount;
+                }
+                return;
+            }
+        }
     }
-    AddPrizeInOrder(head->left,c_id1,c_id2,amount);
-    if(head->data->id >= c_id1 && head->data->id < c_id2)
+}
+
+int getClosest(TreeNode<Costumer>* root,int target)
+{
+    int cur_closest = root->key;
+    while(root != nullptr)
     {
-        head->data->prize += amount;
+        if(root->key == target)
+        {
+            return root->key;
+        }
+        if(root->key < target)
+        {
+            cur_closest = root->key;
+            root = root->right;
+            continue;
+        }
+        if(root->key > target)
+        {
+            cur_closest = root->key;
+            root = root->left;
+            continue;
+        }
     }
-    AddPrizeInOrder(head->right,c_id1,c_id2,amount);
+    return cur_closest;
 }
 
 StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double  amount)
@@ -140,7 +229,12 @@ StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double  amount)
     {
         return INVALID_INPUT;
     }
-    AddPrizeInOrder(Vip_Costumers->head,c_id1,c_id2,amount);
+    if(Vip_Costumers->head == nullptr)
+    {
+        return SUCCESS;
+    }
+    Add(Vip_Costumers->head,getClosest(Vip_Costumers->head,c_id2),c_id2,amount);
+    Add(Vip_Costumers->head,getClosest(Vip_Costumers->head,c_id1),c_id1,-amount);
     return SUCCESS;
 }
 
@@ -150,12 +244,12 @@ Output_t<double> RecordsCompany::getExpenses(int c_id)
     {
         return INVALID_INPUT;
     }
-    TreeNode<VipCostumer>* temp = Vip_Costumers->Find(c_id);
+    TreeNode<Costumer>* temp = Vip_Costumers->Find(c_id);
     if(temp == nullptr)
     {
         return DOESNT_EXISTS;
     }
-    return temp->data->expenses - temp->data->prize;
+    return temp->data->expenses - temp->calcPrize(Vip_Costumers->head,c_id);
 }
 
 StatusType RecordsCompany::putOnTop(int r_id1, int r_id2)

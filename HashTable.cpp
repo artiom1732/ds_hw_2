@@ -33,7 +33,7 @@ void CopyTrees(TreeNode<Costumer>* root,AVLTree<Costumer>** data,int size)
         return;
     }
     CopyTrees(root->left,data,size);
-    data[HashFunc(root->data->id,size)]->treeInsert(root->key,new Costumer(root->data->id,root->data->phone_number));
+    data[HashFunc(root->data->id,size)]->treeInsert(root->key,new Costumer(root->data->id,root->data->phone_number,root->data->vip));
     CopyTrees(root->right,data,size);
 }
 

@@ -7,9 +7,10 @@ class Costumer
 public:
     int id;
     int phone_number;
-    Costumer* next;
     bool vip;
-    Costumer(int id,int number):id(id),phone_number(number),next(nullptr),vip(false){}
+    double extra;
+    double expenses;
+    Costumer(int id,int number,bool member = false):id(id),phone_number(number),vip(member),extra(0),expenses(0){}
 };
 
 #endif

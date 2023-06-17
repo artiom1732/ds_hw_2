@@ -11,7 +11,7 @@ class RecordsCompany {
   private:
     UnionFind* Disks;
     HashTable* Costumers;
-    AVLTree<VipCostumer>* Vip_Costumers;
+    AVLTree<Costumer>* Vip_Costumers;
   public:
     RecordsCompany();
     ~RecordsCompany();

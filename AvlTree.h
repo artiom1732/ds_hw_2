@@ -1,7 +1,6 @@
 #ifndef _AVL_TREE
 #define _AVL_TREE
 
-#include "VipCostumer.h"
 #include "Costumer.h"
 
 inline int max(int a,int b)
@@ -34,12 +33,13 @@ public:
             return to_add;
         }
         else if(head->key > to_add->key)
-        {
+        {  
+            to_add->data->extra -= head->data->extra;
             head->left = insert(head->left,to_add);
-
         }
         else if(head->key < to_add->key)
-        {  
+        {   
+            to_add->data->extra -= head->data->extra;
             head->right = insert(head->right,to_add);
         }
         else
@@ -84,20 +84,37 @@ public:
     {
         TreeNode* A = head;
         TreeNode* B = head->right;
+        int eb = B->data->extra;
+        int ea = A->data->extra;
         A->right = B->left;
         B->left = A;
         A->height = max(getHeight(A->left),getHeight(A->right))+1;
         B->height = max(getHeight(B->left),getHeight(B->right))+1;
+        B->data->extra = ea + eb;
+        A->data->extra = -eb;
+        if(A->right)
+        {
+            A->right->data->extra += eb;
+        }
         return B;
     }
     TreeNode* rotateLL(TreeNode* head)
     {
         TreeNode* A = head;
         TreeNode* B = head->left;
+        int eb = B->data->extra;
+        int ea = A->data->extra;
         A->left = B->right;
         B->right = A;
         A->height = max(getHeight(A->left),getHeight(A->right))+1;
         B->height = max(getHeight(B->left),getHeight(B->right))+1;
+        B->data->extra = ea + eb;
+        A->data->extra = -eb;
+        if(A->left)
+        {
+            A->left->data->extra += eb;
+        }
+
         return B;
     }
     TreeNode* rotateRL(TreeNode* head)
@@ -134,7 +151,26 @@ public:
         }
         return nullptr;
     }
+    int calcPrize(TreeNode<Costumer>* root,int id)
+    {
+        int sum = 0;
+        while(root->key != id)
+        {
+            sum += root->data->extra;
+            if(root->key < id)
+            {
+                root = root->right;
+            }
+            else
+            {
+                root = root->left;
+            }
+        }
+        sum += root->data->extra;
+        return sum;
+    }
 };
+
 
 template<class T>
 class AVLTree

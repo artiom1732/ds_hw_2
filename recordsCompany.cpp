@@ -1,4 +1,5 @@
 #include "recordsCompany.h"
+#include <exception>
 
 RecordsCompany::RecordsCompany():Disks(nullptr),Costumers(new HashTable()),Vip_Costumers(new AVLTree<Costumer>()){}
 
@@ -25,11 +26,25 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records)
     }
     if(!Disks)
     {
-        Disks = new UnionFind(records_stocks,number_of_records);
+        try
+        {
+            Disks = new UnionFind(records_stocks,number_of_records);
+        }
+        catch(const std::exception& e)
+        {
+            return ALLOCATION_ERROR;
+        }
         return SUCCESS;
     }
     delete Disks;
-    Disks = new UnionFind(records_stocks,number_of_records);
+    try
+    {
+        Disks = new UnionFind(records_stocks,number_of_records);
+    }
+    catch(const std::exception& e)
+    {
+        return ALLOCATION_ERROR;
+    }
     clearVipCostumers(Vip_Costumers->head);
     return SUCCESS;
 }
@@ -44,7 +59,15 @@ StatusType RecordsCompany::addCostumer(int c_id, int phone)
     {
         return ALREADY_EXISTS;
     }
-    Costumers->addCostumer(c_id,phone);
+    try
+    {
+        Costumers->addCostumer(c_id,phone);
+
+    }
+    catch(const std::exception& e)
+    {
+        return ALLOCATION_ERROR;
+    }
     return SUCCESS;
 }
 
@@ -78,8 +101,15 @@ StatusType RecordsCompany::makeMember(int c_id)
         return ALREADY_EXISTS;
     }
     Costumer* cur = Costumers->Find(c_id);
-    Vip_Costumers->treeInsert(c_id,new Costumer(cur->id,cur->phone_number));
-    cur->vip = true;
+    try
+    {
+        Vip_Costumers->treeInsert(c_id,new Costumer(cur->id,cur->phone_number));
+        cur->vip = true;
+    }
+    catch(const std::exception& e)
+    {
+        return ALLOCATION_ERROR;
+    }
     return SUCCESS;
 }
 
